@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Environment variables
+.env
+
+# .NET build files
+bin/
+obj/
+
+# VS Code
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
