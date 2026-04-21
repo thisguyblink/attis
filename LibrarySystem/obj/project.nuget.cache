@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "sEjkbYGm9xk=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Diane Orate\\Documents\\VS Code\\CPSC 449\\attis\\LibrarySystem\\LibrarySystem.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.6\\microsoft.aspnetcore.openapi.10.0.6.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.0\\microsoft.entityframeworkcore.8.0.0.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.0\\microsoft.entityframeworkcore.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.0\\microsoft.entityframeworkcore.analyzers.8.0.0.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.entityframeworkcore.inmemory\\8.0.0\\microsoft.entityframeworkcore.inmemory.8.0.0.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
+    "C:\\Users\\Diane Orate\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\10.1.7\\swashbuckle.aspnetcore.swaggerui.10.1.7.nupkg.sha512"
+  ],
+  "logs": []
+}
