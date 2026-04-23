@@ -20,7 +20,7 @@ public class BorrowRecordController : ControllerBase
         return Ok(borrowRecords);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("member/{memberId}")]
     public async  Task<IActionResult>GetMemberBorrowRecords(int memberId)
     {
         try {
@@ -33,7 +33,7 @@ public class BorrowRecordController : ControllerBase
 
     }
 
-    [HttpPost]
+    [HttpPost("checkout")]
 
     public async Task<IActionResult> CheckoutBook(CheckoutBookRequest checkoutBookRequest)
     {
@@ -48,7 +48,7 @@ public class BorrowRecordController : ControllerBase
         
     }
 
-    [HttpPost]
+    [HttpPost("return")]
     public async Task<IActionResult> ReturnBook(ReturnBookRequest returnBookRequest)
     {
         try

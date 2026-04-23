@@ -14,19 +14,19 @@ public class BorrowRecordRepository : IBorrowRecordRepository
 
     public async Task<BorrowRecord> CheckoutBookAsync(BorrowRecord borrowRecord)
     {
-        _context.BorrowRecords.AddAsync(borrowRecord);
+        await _context.BorrowRecords.AddAsync(borrowRecord);
         await _context.SaveChangesAsync();
         return borrowRecord;
     }
     public async Task<BorrowRecord> ReturnBookAsync(BorrowRecord borrowRecord)
     {
-        _context.BorrowRecords.UpdateAsync(borrowRecord);
+        _context.BorrowRecords.Update(borrowRecord);
         await _context.SaveChangesAsync();
         return borrowRecord;
     }
     public async Task<List<BorrowRecord>> GetAllBorrowRecordAsync()
     {
-        return await _context.BorrowRecords.GetAllAsync().ToListAsync();
+        return await _context.BorrowRecords.ToListAsync();
     }
     public async Task<List<BorrowRecord>> GetMemberBorrowRecordAsync(int memberId)
     {
@@ -35,15 +35,15 @@ public class BorrowRecordRepository : IBorrowRecordRepository
             .ToListAsync();
     }
 
-    public async Task<BorrowRecord> GetRecordByIds(int bookId, int memberId)
+    public async Task<BorrowRecord?> GetRecordByIds(int bookId, int memberId)
     {
         return await _context.BorrowRecords
-            .FirstOrDefaultAsync(r => r.BookId == bookId && r.MemberId == memberId && Status == "CheckedOut");
+            .FirstOrDefaultAsync(r => r.BookId == bookId && r.MemberId == memberId && r.Status == "Checked Out");
     }
 
     public async Task<bool> CheckBookAvaliable(int bookId)
     {
-        var record = await _context.BorrowRecords.FirstOrDefaultAsync(r => r.BookId == bookId && r.Status == "CheckedOut");
+        var record = await _context.BorrowRecords.FirstOrDefaultAsync(r => r.BookId == bookId && r.Status == "Checked Out");
         if (record == null)
         {
             return true;
