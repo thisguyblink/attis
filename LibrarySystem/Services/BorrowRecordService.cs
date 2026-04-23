@@ -18,11 +18,10 @@ public class BorrowRecordService : IBorrowRecordService
         {
             throw new InvalidOperationException("Book is already checked out.");
         }
-        var id = Guid.NewGuid();
+
         var date = DateTime.Now;
         var borrowRecord = new BorrowRecord
         {
-            Id = id, 
             BookId = checkoutBookRequest.BookId,
             MemberId = checkoutBookRequest.MemberId,
             BorrowDate = date,
@@ -34,12 +33,12 @@ public class BorrowRecordService : IBorrowRecordService
 
         return new BorrowRecordResponse
         {
-            Id = id, 
+            Id = borrowRecord.Id, 
             BookId = checkoutBookRequest.BookId,
             MemberId = checkoutBookRequest.MemberId,
             BorrowDate = date,
-            ReturnDate = "none",
-            Status = "CheckedOut"
+            ReturnDate = null,
+            Status = "Checked Out"
         };
 
     }

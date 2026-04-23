@@ -22,6 +22,6 @@ public class BorrowRecordResponse
 
     public required DateTime BorrowDate { get; set; }
 
-    public required DateTime ReturnDate { get; set; }
+    public DateTime? ReturnDate { get; set; }
     public required string Status { get; set; }
 }

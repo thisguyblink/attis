@@ -13,9 +13,8 @@ public class BorrowRecord
 
     [Required]
     public DateTime BorrowDate { get; set; }
-    
-    [Required]
-    public DateTime ReturnDate { get; set; }
+
+    public DateTime? ReturnDate { get; set; }
     
     [Required]
     public string Status { get; set; }
