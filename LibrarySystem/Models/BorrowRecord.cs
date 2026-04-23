@@ -12,9 +12,10 @@ public class BorrowRecord
     public int MemberId { get; set; }
 
     [Required]
-    public string BorrowDate { get; set; }
-
-    public string ReturnDate { get; set; }
+    public DateTime BorrowDate { get; set; }
+    
+    [Required]
+    public DateTime ReturnDate { get; set; }
     
     [Required]
     public string Status { get; set; }
