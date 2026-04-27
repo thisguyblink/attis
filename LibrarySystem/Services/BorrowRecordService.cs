@@ -2,14 +2,18 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.Contracts;
 using System.Net;
+using Microsoft.Extensions.Caching.Memory;
 
 public class BorrowRecordService : IBorrowRecordService
 {
     private readonly IBorrowRecordRepository _borrowRecordRepository;
+    private readonly IMemoryCache _cache;
+    private const string AllBorrowRecordsCacheKey = "AllBorrowRecords";
 
-    public BorrowRecordService(IBorrowRecordRepository borrowRecordRepository)
+    public BorrowRecordService(IBorrowRecordRepository borrowRecordRepository, IMemoryCache cache)
     {
         _borrowRecordRepository = borrowRecordRepository;
+        _cache = cache;
     } 
 
     public async Task<BorrowRecordResponse> CheckoutBook(CheckoutBookRequest checkoutBookRequest)
@@ -28,6 +32,8 @@ public class BorrowRecordService : IBorrowRecordService
             ReturnDate = null,
             Status = "Checked Out"
         };
+
+        _cache.Remove(AllBorrowRecordsCacheKey);
         
         await _borrowRecordRepository.CheckoutBookAsync(borrowRecord);
 
@@ -53,6 +59,8 @@ public class BorrowRecordService : IBorrowRecordService
         record.ReturnDate = DateTime.Now;
         record.Status = "Returned";   
 
+        _cache.Remove(AllBorrowRecordsCacheKey);
+
         await _borrowRecordRepository.ReturnBookAsync(record);
 
         return new BorrowRecordResponse
@@ -68,9 +76,13 @@ public class BorrowRecordService : IBorrowRecordService
 
     public async Task<List<BorrowRecordResponse>> AllBorrowRecords()
     {
+        if (_cache.TryGetValue(AllBorrowRecordsCacheKey, out List<BorrowRecordResponse> cachedRecords)) {
+            Console.WriteLine("Cache hit, cache being returned");
+            return cachedRecords;
+        }
         var borrowRecords = await _borrowRecordRepository.GetAllBorrowRecordAsync();
-
-        return borrowRecords.Select(record => new BorrowRecordResponse 
+        
+        var result = borrowRecords.Select(record => new BorrowRecordResponse 
         {
             Id = record.Id,
             BookId = record.BookId,
@@ -80,6 +92,11 @@ public class BorrowRecordService : IBorrowRecordService
             Status = record.Status
 
         }).ToList();
+
+        _cache.Set(AllBorrowRecordsCacheKey, result, TimeSpan.FromMinutes(10));
+        Console.WriteLine("Cache not hit, result saved to cache");
+
+        return result;
     }
 
     public async Task<List<BorrowRecordResponse>> MemberBorrowRecords(int MemberId)
