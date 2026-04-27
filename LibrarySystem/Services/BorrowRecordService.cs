@@ -5,101 +5,118 @@ using System.Net;
 
 public class BorrowRecordService : IBorrowRecordService
 {
-    private readonly IBorrowRecordRepository _borrowRecordRepository;
+  private readonly IBorrowRecordRepository _borrowRecordRepository;
+  private readonly IBookRepository _bookRepository;
 
-    public BorrowRecordService(IBorrowRecordRepository borrowRecordRepository)
+  public BorrowRecordService(
+      IBorrowRecordRepository borrowRecordRepository,
+      IBookRepository bookRepository)
+  {
+    _borrowRecordRepository = borrowRecordRepository;
+    _bookRepository = bookRepository;
+  }
+
+  public async Task<BorrowRecordResponse> CheckoutBook(CheckoutBookRequest checkoutBookRequest)
+  {
+    var book = await _bookRepository.GetByIdAsync(checkoutBookRequest.BookId);
+
+    if (book == null)
+      throw new KeyNotFoundException("Book not found.");
+
+    if (book.AvailableCopies <= 0)
+      throw new InvalidOperationException("No available copies available.");
+
+    var date = DateTime.Now;
+
+    book.AvailableCopies--;
+
+    var borrowRecord = new BorrowRecord
     {
-        _borrowRecordRepository = borrowRecordRepository;
-    } 
+      BookId = checkoutBookRequest.BookId,
+      MemberId = checkoutBookRequest.MemberId,
+      BorrowDate = date,
+      ReturnDate = null,
+      Status = "Borrowed"
+    };
 
-    public async Task<BorrowRecordResponse> CheckoutBook(CheckoutBookRequest checkoutBookRequest)
+    await _bookRepository.UpdateAsync(book);
+    await _borrowRecordRepository.CheckoutBookAsync(borrowRecord);
+
+    return new BorrowRecordResponse
     {
-        if (!await _borrowRecordRepository.CheckBookAvaliable(checkoutBookRequest.BookId))
-        {
-            throw new InvalidOperationException("Book is already checked out.");
-        }
+      Id = borrowRecord.Id,
+      BookId = borrowRecord.BookId,
+      MemberId = borrowRecord.MemberId,
+      BorrowDate = borrowRecord.BorrowDate,
+      ReturnDate = borrowRecord.ReturnDate,
+      Status = borrowRecord.Status
+    };
+  }
 
-        var date = DateTime.Now;
-        var borrowRecord = new BorrowRecord
-        {
-            BookId = checkoutBookRequest.BookId,
-            MemberId = checkoutBookRequest.MemberId,
-            BorrowDate = date,
-            ReturnDate = null,
-            Status = "Checked Out"
-        };
-        
-        await _borrowRecordRepository.CheckoutBookAsync(borrowRecord);
+  public async Task<BorrowRecordResponse> ReturnBook(ReturnBookRequest returnBookRequest)
+  {
+    var record = await _borrowRecordRepository.GetRecordByIds(
+        returnBookRequest.BookId,
+        returnBookRequest.MemberId
+    );
 
-        return new BorrowRecordResponse
-        {
-            Id = borrowRecord.Id, 
-            BookId = checkoutBookRequest.BookId,
-            MemberId = checkoutBookRequest.MemberId,
-            BorrowDate = date,
-            ReturnDate = null,
-            Status = "Checked Out"
-        };
+    if (record == null)
+      throw new KeyNotFoundException("Borrow record not found.");
 
+    var book = await _bookRepository.GetByIdAsync(returnBookRequest.BookId);
+
+    if (book == null)
+      throw new KeyNotFoundException("Book not found.");
+
+    record.ReturnDate = DateTime.Now;
+    record.Status = "Returned";
+
+    if (book.AvailableCopies < book.TotalCopies)
+    {
+      book.AvailableCopies++;
     }
 
-    public async Task<BorrowRecordResponse> ReturnBook(ReturnBookRequest returnBookRequest)
+    await _bookRepository.UpdateAsync(book);
+    await _borrowRecordRepository.ReturnBookAsync(record);
+
+    return new BorrowRecordResponse
     {
-        var record = await _borrowRecordRepository.GetRecordByIds(returnBookRequest.BookId, returnBookRequest.MemberId);
-        
-        if (record == null)
-            throw new KeyNotFoundException("Borrow record not found.");
+      Id = record.Id,
+      BookId = record.BookId,
+      MemberId = record.MemberId,
+      BorrowDate = record.BorrowDate,
+      ReturnDate = record.ReturnDate,
+      Status = record.Status
+    };
+  }
 
-        record.ReturnDate = DateTime.Now;
-        record.Status = "Returned";   
+  public async Task<List<BorrowRecordResponse>> AllBorrowRecords()
+  {
+    var borrowRecords = await _borrowRecordRepository.GetAllBorrowRecordAsync();
 
-        await _borrowRecordRepository.ReturnBookAsync(record);
-
-        return new BorrowRecordResponse
-        {
-            Id = record.Id,
-            BookId = record.BookId,
-            MemberId = record.MemberId,
-            BorrowDate = record.BorrowDate,
-            ReturnDate = record.ReturnDate,
-            Status = record.Status
-        };
-    }
-
-    public async Task<List<BorrowRecordResponse>> AllBorrowRecords()
+    return borrowRecords.Select(record => new BorrowRecordResponse
     {
-        var borrowRecords = await _borrowRecordRepository.GetAllBorrowRecordAsync();
+      Id = record.Id,
+      BookId = record.BookId,
+      MemberId = record.MemberId,
+      BorrowDate = record.BorrowDate,
+      ReturnDate = record.ReturnDate,
+      Status = record.Status
+    }).ToList();
+  }
 
-        return borrowRecords.Select(record => new BorrowRecordResponse 
-        {
-            Id = record.Id,
-            BookId = record.BookId,
-            MemberId = record.MemberId,
-            BorrowDate = record.BorrowDate,
-            ReturnDate = record.ReturnDate,
-            Status = record.Status
+  public async Task<List<BorrowRecordResponse>> MemberBorrowRecords(int MemberId)
+  {
+    var memberBorrowRecords = await _borrowRecordRepository.GetMemberBorrowRecordAsync(MemberId);
 
-        }).ToList();
-    }
-
-    public async Task<List<BorrowRecordResponse>> MemberBorrowRecords(int MemberId)
+    return memberBorrowRecords.Select(record => new BorrowRecordResponse
     {
-        var memberBorrowRecords = await _borrowRecordRepository.GetMemberBorrowRecordAsync(MemberId);
-
-        return memberBorrowRecords.Select(record => new BorrowRecordResponse 
-        {
-            Id = record.Id,
-            BookId = record.BookId,
-            MemberId = record.MemberId,
-            BorrowDate = record.BorrowDate,
-            ReturnDate = record.ReturnDate,
-            Status = record.Status
-
-        }).ToList();
-    }
+      Id = record.Id,
+      BookId = record.BookId,
+      MemberId = record.MemberId,
+      BorrowDate = record.BorrowDate,
+      ReturnDate = record.ReturnDate,
+      Status = record.Status
+    }).ToList();
+  }
 }
-
-
-    
-    
-    
