@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Services
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(); // ✅ NEW (instead of SwaggerGen)
+builder.Services.AddMemoryCache(); // Need this for cache in BorrowRecordService
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("LibraryDb"));
